@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "525996237230",
+    "project_id": "courseproject-3c717",
+    "storage_bucket": "courseproject-3c717.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:525996237230:android:578149c14d1241533fe83f",
+        "android_client_info": {
+          "package_name": "com.example.course_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApIMx7JUnQc-JKp9RUlBPpfDtSNEl0G9U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
