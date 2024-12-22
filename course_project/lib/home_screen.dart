@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:course_project/profile_page.dart';
+import 'package:course_project/tasklist_page.dart';
+
+import 'addtask_page.dart';
+import 'calendar_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int buttonIndex = 0; // Pending ve Completed sekmelerinin kontrolü için
-  int selectedIndex = 0; // BottomNavigationBar kontrolü için
+
   final widgets = [
     Container(
       child: Center(child: Text("Pending Tasks")),
@@ -17,15 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Container(
       child: Center(child: Text("Completed Tasks")),
     ),
-  ];
-
-  // Alt menü simgelerine karşılık gelen ekranlar
-  final List<Widget> _pages = [
-    Center(child: Text("Home Page")),
-    Center(child: Text("Calendar Page")),
-    Center(child: Text("Add Task")),
-    Center(child: Text("Task List Page")),
-    Center(child: Text("Profile Page")),
   ];
 
   @override
@@ -47,8 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: selectedIndex == 0 // Home için içerik gösterimi
-          ? Padding(
+      body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
@@ -158,14 +153,30 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-      )
-          : _pages[selectedIndex], // Diğer ekranlar için içerik gösterimi
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: selectedIndex,
+        currentIndex: 0, // "Home" her zaman aktif kalır.
         onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
+          switch (index) {
+            case 1:
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CalendarPage()));
+              break;
+            case 2:
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => AddTaskPage()));
+              break;
+            case 3:
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => TaskListPage()));
+              break;
+            case 4:
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ProfilePage()));
+              break;
+            default:
+              break; // Home için işlem yapılmaz.
+          }
         },
         items: [
           BottomNavigationBarItem(
@@ -217,3 +228,4 @@ class TaskItem extends StatelessWidget {
     );
   }
 }
+
