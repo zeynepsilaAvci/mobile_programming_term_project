@@ -1,6 +1,8 @@
 # course_project
 
 A new Flutter project.
+# that is new branch application
+#  i am another team member i have access to use that page and change it directly
 
 ## Getting Started
 
