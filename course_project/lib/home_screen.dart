@@ -1,9 +1,12 @@
+import 'package:course_project/widgets/completed_widget.dart';
+import 'package:course_project/widgets/pending_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:course_project/profile_page.dart';
 import 'package:course_project/tasklist_page.dart';
-
+import 'package:course_project/services/database_services.dart'; // DatabaseService'i içe aktar
 import 'addtask_page.dart';
 import 'calendar_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,18 +17,56 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int buttonIndex = 0; // Pending ve Completed sekmelerinin kontrolü için
+  final DatabaseService _databaseService = DatabaseService();
+  int pendingTasksCount = 0;
+  int completedTasksCount = 0;
 
-  final widgets = [
-    Container(
-      child: Center(child: Text("Pending Tasks")),
-    ),
-    Container(
-      child: Center(child: Text("Completed Tasks")),
-    ),
+  // widgets listesini burada tanımlayın
+  final List<Widget> widgets = [
+    PendingWidget(),
+    CompletedWidget(),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _fetchTaskCounts();
+  }
+
+  Future<void> _fetchTaskCounts() async {
+    // Bugünün tarihini al
+    DateTime today = DateTime.now();
+    DateTime startOfDay = DateTime(today.year, today.month, today.day);
+    DateTime endOfDay = startOfDay.add(Duration(days: 1));
+
+    // Pending görev sayısını al
+    final pendingTasks = await _databaseService.todoCollection
+        .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('completed', isEqualTo: false)
+        .where('createdAt', isGreaterThanOrEqualTo: startOfDay)
+        .where('createdAt', isLessThan: endOfDay)
+        .get();
+
+    // Completed görev sayısını al
+    final completedTasks = await _databaseService.todoCollection
+        .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('completed', isEqualTo: true)
+        .where('createdAt', isGreaterThanOrEqualTo: startOfDay)
+        .where(' createdAt', isLessThan: endOfDay)
+        .get();
+
+    setState(() {
+      pendingTasksCount = pendingTasks.docs.length;
+      completedTasksCount = completedTasks.docs.length;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double completionPercentage = (pendingTasksCount + completedTasksCount) > 0
+        ? (completedTasksCount / (pendingTasksCount + completedTasksCount)) * 100
+        : 0;
+
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -68,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '15 tasks',
+                    '$pendingTasksCount tasks', // Pending task sayısı
                     style: TextStyle(fontSize: 15, color: Colors.white70),
                   ),
                   SizedBox(height: 10),
@@ -82,14 +123,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           padding:
                           const EdgeInsets.symmetric(horizontal: 8.0),
                           child: LinearProgressIndicator(
-                            value: 0.3,
+                            value: completionPercentage / 100, // Yüzdeyi ayarla
                             backgroundColor: Colors.white30,
                             color: Colors.white,
                           ),
                         ),
                       ),
                       Text(
-                        '30%',
+                        '${completionPercentage.toStringAsFixed(0)}%', // Tamamlanan görev yüzdesi
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
@@ -139,18 +180,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             SizedBox(height: 20),
-            widgets[buttonIndex],
+            widgets[buttonIndex], // Burada hata olmamalı
 
             // Task List
-            Expanded(
-              child: ListView(
-                children: [
-                  TaskItem(title: 'Task1', time: '09:00-12:00'),
-                  TaskItem(title: 'Task2', time: '09:00-12:00'),
-                  TaskItem(title: 'Task3', time: '09:00-13:00'),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -185,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+            label: ' Calendar',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add, size: 40),
@@ -206,26 +238,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-class TaskItem extends StatelessWidget {
-  final String title;
-  final String time;
-
-  TaskItem({required this.title, required this.time});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      child: ListTile(
-        leading: Icon(Icons.check_circle, color: Colors.black),
-        title: Text(title),
-        subtitle: Text(time),
-        trailing: Icon(Icons.arrow_forward_ios),
-      ),
-    );
-  }
-}
-

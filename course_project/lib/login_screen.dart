@@ -94,7 +94,7 @@ class LoginScreen extends StatelessWidget {
                       }
                     },
                     child: Text(
-                      "Register",
+                      "Log In",
                       style: TextStyle(
                         color: Colors.deepPurple[900],
                         fontSize: 18,
