@@ -4,6 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:course_project/services/database_services.dart'; // DatabaseService'i içe aktar
 
 class AddTaskPage extends StatefulWidget {
+  final Function onTaskAdded; // Callback fonksiyonu
+
+  const AddTaskPage({Key? key, required this.onTaskAdded}) : super(key: key);
+
   @override
   _AddTaskPageState createState() => _AddTaskPageState();
 }
@@ -53,7 +57,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
         _descriptionController.text,
       );
 
-      // Görev başarıyla eklendiğinde kullanıcıyı geri yönlendirin
+      // Görev başarıyla eklendiğinde callback fonksiyonunu çağır
+      widget.onTaskAdded(); // Callback fonksiyonu çağrılıyor
+
+      // Kullanıcıyı geri yönlendirin
       Navigator.pop(context);
     } else {
       // Hata mesajı göster

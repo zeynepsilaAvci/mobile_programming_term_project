@@ -7,6 +7,7 @@ import 'package:course_project/login_screen.dart';
 import 'package:course_project/signup_screen.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
+import 'mainScreen.dart';
 
 void main () async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       title: "GrowthTrack",
       theme:
       ThemeData(primarySwatch: Colors.indigo,primaryColor: Colors.indigo),
-      home: _auth.currentUser !=null ? HomeScreen() : LoginScreen(),
+      home: _auth.currentUser !=null ? MainScreen() : LoginScreen(),
 
     );
   }
