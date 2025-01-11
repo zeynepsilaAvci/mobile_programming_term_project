@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CalendarPage extends StatefulWidget {
   @override
@@ -13,6 +15,9 @@ class _CalendarPageState extends State<CalendarPage> {
   late DateTime _focusedDay;
   late DateTime? _selectedDay;
 
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   void initState() {
     super.initState();
@@ -21,30 +26,91 @@ class _CalendarPageState extends State<CalendarPage> {
     _focusedDay = DateTime.now();
     _selectedDay = DateTime.now();
     _fetchEvents();
+    _checkForEventsAndNotify();
+    _initializeNotifications();
+  }
+
+  Future<void> _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   Future<void> _fetchEvents() async {
-    QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('events').get();
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('events')
+        .get();
+
+    _events = {};
     for (var doc in snapshot.docs) {
       DateTime eventDate = (doc['date'] as Timestamp).toDate();
+      DateTime normalizedDate = DateTime(eventDate.year, eventDate.month, eventDate.day);
       String eventName = doc['name'];
-      if (_events[eventDate] != null) {
-        _events[eventDate]!.add(eventName);
+      if (_events[normalizedDate] != null) {
+        _events[normalizedDate]!.add(eventName);
       } else {
-        _events[eventDate] = [eventName];
+        _events[normalizedDate] = [eventName];
       }
     }
+
     setState(() {
-      _selectedEvents = _events[_selectedDay] ?? [];
+      DateTime? normalizedSelectedDay = _selectedDay != null
+          ? DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day)
+          : null;
+      _selectedEvents = _events[normalizedSelectedDay] ?? [];
     });
+
+    print("Fetched events: $_events");
+  }
+
+  Future<void> _checkForEventsAndNotify() async {
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    DateTime tomorrow = DateTime.now().add(Duration(days: 1));
+    DateTime normalizedTomorrow = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('events')
+        .where('date', isEqualTo: Timestamp.fromDate(normalizedTomorrow))
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      await flutterLocalNotificationsPlugin.show(
+        0,
+        'Yarın için etkinlikleriniz var!',
+        'Etkinliklerinizi kontrol etmeyi unutmayın.',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'your_channel_id',
+            'your_channel_name',
+            channelDescription: 'your_channel_description',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+        ),
+      );
+    }
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
-      _selectedEvents = _events[selectedDay] ?? [];
+
+      DateTime normalizedSelectedDay = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
+      _selectedEvents = _events[normalizedSelectedDay] ?? [];
     });
+
+    print("Selected day: $_selectedDay");
+    print("Selected events: $_selectedEvents");
   }
 
   void _addEvent() {
@@ -64,20 +130,22 @@ class _CalendarPageState extends State<CalendarPage> {
             TextButton(
               onPressed: () {
                 if (eventController.text.isNotEmpty) {
-                  setState(() {
-                    if (_events[_selectedDay!] != null) {
-                      _events[_selectedDay!]!.add(eventController.text);
-                    } else {
-                      _events[_selectedDay!] = [eventController.text];
-                    }
-                    _selectedEvents = _events[_selectedDay!]!;
-
-                    // Firestore'a etkinlik ekle
-                    FirebaseFirestore.instance.collection('events').add({
+                  User? user = _auth.currentUser;
+                  if (user != null) {
+                    FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(user.uid)
+                        .collection('events')
+                        .add({
                       'name': eventController.text,
                       'date': Timestamp.fromDate(_selectedDay!),
+                    }).then((_) {
+                      print("Event added!");
+                      _fetchEvents(); // Veri çek ve güncelle
+                    }).catchError((error) {
+                      print("Error adding event: $error");
                     });
-                  });
+                  }
                   Navigator.of(context).pop();
                 }
               },
@@ -99,6 +167,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Calendar'),
         actions: [
           IconButton(
@@ -115,7 +184,10 @@ class _CalendarPageState extends State<CalendarPage> {
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: _onDaySelected,
-            eventLoader: (day) => _events[day] ?? [],
+            eventLoader: (day) {
+              DateTime normalizedDay = DateTime(day.year, day.month, day.day);
+              return _events[normalizedDay] ?? [];
+            },
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
                 color: Colors.purple.shade200,
@@ -153,7 +225,6 @@ class _CalendarPageState extends State<CalendarPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   const SizedBox(height: 8.0),
                   Expanded(
                     child: _selectedEvents.isNotEmpty

@@ -5,6 +5,8 @@ import 'package:course_project/home_screen.dart';
 import 'package:course_project/services/auth_services.dart';
 import 'package:course_project/login_screen.dart';
 
+import 'mainScreen.dart';
+
 class SignupScreen extends StatelessWidget {
   final AuthService _auth= AuthService();
   final TextEditingController _emailController=TextEditingController();
@@ -13,10 +15,11 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1d2630),
+      backgroundColor: Colors.purple.shade200,
       appBar: AppBar(
-        backgroundColor: Color(0xFF1d2630),
-        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.purple.shade200,
+        foregroundColor: Color(0xFF1d2630),
         title: Text("Create Account"),
       ),
       body: SingleChildScrollView(
@@ -30,7 +33,7 @@ class SignupScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 35,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: Color(0xFF1d2630),
                 ),
               ),
               SizedBox(height: 5),
@@ -38,7 +41,7 @@ class SignupScreen extends StatelessWidget {
                 "Register Here",
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Color(0xFF1d2630),
                 ),
               ),
               SizedBox(height: 40),
@@ -99,7 +102,7 @@ class SignupScreen extends StatelessWidget {
                       }
                       if(user != null){
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => HomeScreen(),
+                            MaterialPageRoute(builder: (context) => MainScreen(),
                             ));
                       }
                     },
@@ -126,7 +129,9 @@ class SignupScreen extends StatelessWidget {
                         ));
                   }
                   , child: Text("Log In",
-                style: TextStyle(fontSize: 18),))
+                style: TextStyle(fontSize: 18,
+                color: Color(0xFF1d2630)),
+                  ))
             ],
           ),
         ),

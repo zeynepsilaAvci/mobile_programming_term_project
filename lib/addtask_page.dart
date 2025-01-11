@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:course_project/services/database_services.dart'; // DatabaseService'i içe aktar
+import 'package:course_project/services/database_services.dart';
+
+import 'home_screen.dart';
+import 'mainScreen.dart'; // DatabaseService'i içe aktar
 
 class AddTaskPage extends StatefulWidget {
   final Function onTaskAdded; // Callback fonksiyonu
@@ -61,7 +64,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       widget.onTaskAdded(); // Callback fonksiyonu çağrılıyor
 
       // Kullanıcıyı geri yönlendirin
-      Navigator.pop(context);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
     } else {
       // Hata mesajı göster
       ScaffoldMessenger.of(context).showSnackBar(
@@ -74,6 +77,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {

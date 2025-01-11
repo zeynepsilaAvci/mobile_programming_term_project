@@ -5,6 +5,8 @@ import 'package:course_project/home_screen.dart';
 import 'package:course_project/services/auth_services.dart';
 import 'package:course_project/signup_screen.dart';
 
+import 'mainScreen.dart';
+
 
 class LoginScreen extends StatelessWidget {
   final AuthService _auth= AuthService();
@@ -14,10 +16,11 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1d2630),
+      backgroundColor: Colors.purple.shade200,
       appBar: AppBar(
-        backgroundColor: Color(0xFF1d2630),
-        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.purple.shade200,
+        foregroundColor: Color(0xFF1d2630),
         title: Text("Sign In"),
       ),
       body: SingleChildScrollView(
@@ -31,7 +34,7 @@ class LoginScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 35,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: Color(0xFF1d2630),
                 ),
               ),
               SizedBox(height: 5),
@@ -39,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                 "Log In Here",
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Color(0xFF1d2630),
                 ),
               ),
               SizedBox(height: 40),
@@ -49,7 +52,7 @@ class LoginScreen extends StatelessWidget {
                 decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white60)
+                        borderSide: BorderSide(color: Colors.black)
                     ),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -67,7 +70,7 @@ class LoginScreen extends StatelessWidget {
                 decoration: InputDecoration(
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: Colors.white60)
+                        borderSide: BorderSide(color: Colors.black87)
                     ),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -89,7 +92,7 @@ class LoginScreen extends StatelessWidget {
                       );
                       if(user != null){
                         Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => HomeScreen(),
+                            MaterialPageRoute(builder: (context) => MainScreen(),
                             ));
                       }
                     },
@@ -116,7 +119,10 @@ class LoginScreen extends StatelessWidget {
                         ));
                   }
                   , child: Text("Create Account",
-                style: TextStyle(fontSize: 18),))
+                style: TextStyle(fontSize: 18,
+                color: Color(0xFF1d2630)),
+              )
+              )
             ],
           ),
         ),
